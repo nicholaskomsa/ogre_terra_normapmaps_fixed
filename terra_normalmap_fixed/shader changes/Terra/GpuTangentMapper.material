@@ -1,0 +1,102 @@
+fragment_program Terra/GpuTangentMapper_ps_GLSL glsl
+{
+	source GpuTangentMapper_ps.glsl
+
+	default_params
+	{
+		param_named heightMap int 0
+	}
+}
+
+fragment_program Terra/GpuTangentMapper_ps_HLSL hlsl
+{
+	source GpuTangentMapper_ps.hlsl
+	target ps_5_0 ps_4_0
+	entry_point main
+}
+
+fragment_program Terra/GpuTangentMapper_ps_Metal metal
+{
+	source GpuTangentMapper_ps.metal
+	shader_reflection_pair_hint Ogre/Compositor/Quad_vs
+}
+
+fragment_program Terra/GpuTangentMapper_ps unified
+{
+	delegate Terra/GpuTangentMapper_ps_GLSL
+	delegate Terra/GpuTangentMapper_ps_HLSL
+	delegate Terra/GpuTangentMapper_ps_Metal
+
+	default_params
+	{
+		param_named heightMapResolution float2 128 128
+	}
+}
+
+material Terra/GpuTangentMapper
+{
+    technique
+    {
+
+		pass
+		{
+			depth_check off
+			depth_write off
+
+			cull_hardware none
+
+			vertex_program_ref Ogre/Compositor/Quad_vs
+			{
+			}
+
+			fragment_program_ref Terra/GpuTangentMapper_ps
+			{
+			}
+
+			texture_unit heightMap
+			{
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
+
+fragment_program Terra/GpuTangentMapperU16_ps unified : Terra/GpuTangentMapper_ps
+{
+	preprocessor_defines USE_UINT=1
+
+	default_params
+	{
+		param_named heightMapResolution float2 128 128
+		param_named vScale float3 1.0 1.0 1.0
+	}
+}
+
+material Terra/GpuTangentMapperU16
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+			depth_write off
+
+			cull_hardware none
+
+			vertex_program_ref Ogre/Compositor/Quad_vs
+			{
+			}
+
+			fragment_program_ref Terra/GpuTangentMapperU16_ps 
+			{
+			}
+
+			texture_unit heightMap
+			{
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
